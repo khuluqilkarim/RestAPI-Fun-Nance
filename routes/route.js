@@ -69,4 +69,60 @@ router.get("/children/:child_id", (req, res) => {
   });
 });
 
+router.get("/children/tasks/:task_id", (req, res) => {
+  const { task_id } = req.params;
+  const sql = "SELECT * FROM task_db WHERE task_id = ?";
+
+  db.query(sql, [task_id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Child not found" });
+    }
+    const childData = result[0];
+    res.json({ status: 200, data: childData });
+  });
+});
+
+router.post("/children/task", (req, res) => {
+  const {
+    task_id,
+    child_id,
+    parent_id,
+    title,
+    deadline,
+    point,
+    description,
+    status,
+    proof_url,
+    parent_comment,
+  } = req.body;
+  const sql =
+    "INSERT INTO task_db (task_id, child_id, parent_id, title, deadline, point, description, status, proof_url, parent_comment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  db.query(
+    sql,
+    [
+      task_id,
+      child_id,
+      parent_id,
+      title,
+      deadline,
+      point,
+      description,
+      status,
+      proof_url,
+      parent_comment,
+    ],
+    (err, result) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ status: 500, error: "Internal Server Error" });
+      }
+      res.json({ message: "Child added successfully" });
+    }
+  );
+});
+
 module.exports = router;
